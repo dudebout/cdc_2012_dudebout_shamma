@@ -1,0 +1,16 @@
+auto/
+paper/auto/
+paper/*.pdf
+paper/*.log
+paper/*.aux*
+paper/*-blx.bib
+paper/*.bbl
+paper/*.blg
+paper/*.d
+paper/*.fls
+paper/*.run.xml
+simulations/*.hi
+simulations/*.o
+simulations/.hsenv_*
+simulations/simulation_theoretical
+simulations/simulation_empirical

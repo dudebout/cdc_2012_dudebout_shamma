@@ -1,0 +1,23 @@
+\ProvidesPackage{symb}
+\RequirePackage{ddbsymb}
+
+\newcommand{\K}{^k}
+\newcommand{\sigmahat}{\hat{\sigma}}
+
+\newcommand{\params}{_}
+\newcommand{\strat}{_}
+
+\newcommand{\eQ}[2][]{\ensuremath{\ex^{-\frac{1}{\tau#1} Q#1\of{x#1, z#1, #2#1}}}}
+\newcommand{\gibbsQ}[1][]{\ensuremath{\frac {\eQ[#1]{a}} {\sum\idxin{{a#1}'}{\cA#1} \eQ[#1]{a'}}}}
+
+\newcommand{\Btheta}{B\params{\theta}}
+\newcommand{\Uopt}[1][]{U\opt\params{#1}}
+\newcommand{\Utheta}{\Uopt[\theta]}
+\newcommand{\Uthetap}{\Uopt[\theta']}
+
+\newcommand{\F}{F^}
+\newcommand{\FO}{\F{\rO, m, \epsilon}}
+\newcommand{\FM}{\F{\rM, m}}
+\newcommand{\FF}{\F{m, \epsilon}}
+
+\newcommand{\subfunc}[1]{\mathrm{(#1)}}

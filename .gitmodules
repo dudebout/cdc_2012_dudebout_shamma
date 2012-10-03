@@ -1,0 +1,18 @@
+[submodule "simulations/game-theoretic-learning"]
+	path = simulations/game-theoretic-learning
+	url = git://github.com/dudebout/game-theoretic-learning
+[submodule "paper/texmf/tex/latex/latex_ddbbib"]
+	path = paper/texmf/tex/latex/latex_ddbbib
+	url = git://github.com/dudebout/latex_ddbbib
+[submodule "paper/texmf/tex/latex/latex_ddbieee"]
+	path = paper/texmf/tex/latex/latex_ddbieee
+	url = git://github.com/dudebout/latex_ddbieee
+[submodule "paper/texmf/tex/latex/latex_ddbsymb"]
+	path = paper/texmf/tex/latex/latex_ddbsymb
+	url = git://github.com/dudebout/latex_ddbsymb
+[submodule "paper/texmf/tex/latex/latex_ddbinfo"]
+	path = paper/texmf/tex/latex/latex_ddbinfo
+	url = git://github.com/dudebout/latex_ddbinfo
+[submodule "paper/texmf/bibtex/bib/bibtex_ddb"]
+	path = paper/texmf/bibtex/bib/bibtex_ddb
+	url = git://github.com/dudebout/bibtex_ddb

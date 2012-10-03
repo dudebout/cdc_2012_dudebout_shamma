@@ -1,0 +1,20 @@
+\begin{tikzpicture}
+\pgfplotstableread{\tabledata}{\simulationdata}
+\begin{axis}[
+legend style={font=\footnotesize},
+label style={font=\footnotesize},
+tick label style={font=\footnotesize},
+width=\figureswidth,
+height=\figuresheight,
+xlabel=Time \(t\),
+ylabel=Prediction \ylabelsymbol,
+ymin=0,
+ymax=1,
+xmin=0,
+xmax=100,
+legend entries={\(i = 1\), \(i = 2\)}
+],
+\addplot[color=black, solid] table [x={time}, y={phigh1}] {\simulationdata};
+\addplot[color=black, dashed] table [x={time}, y={phigh2}] {\simulationdata};
+\end{axis}
+\end{tikzpicture}

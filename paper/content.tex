@@ -1,0 +1,583 @@
+\section{Introduction}
+
+
+Game theory's classical solution concept, the Nash equilibrium, requires all the agents to be fully rational.
+This implies that at equilibrium each agent's strategy is optimal with respect to its opponents' strategies.
+Stochastic games are a class of dynamic games extending Markov decision processes~(MDPs) to the multiagent setup.
+The requirement of full rationality in a stochastic game imposes that at equilibrium each agent uses an optimal strategy for a partially observable Markov decision process~(POMDP).
+Implementing such a strategy is intractable as it requires beliefs propagation.
+As a consequence, there are virtually no results for computing or reaching equilibria in stochastic games.
+Empirical evidence equilibria~(EEE) represent a different solution concept attempting to fill that gap.
+
+Instead of trying to solve a POMDP, each agent uses a model of the world and its opponents consistent with empirical observations.
+Agents neglect that they are mutually dependent through the environment.
+Using this model allows each agent to face an MDP instead of a POMDP.
+Solving an MDP, \ie, computing an optimal strategy, is tractable for reasonable sizes of state spaces.
+The agents compute optimal strategies for the MDPs and implement them.
+Even though they neglected the dependency to form their models, their strategies impact all the agents.
+Implementing the optimal strategies changes the statistics of the empirical evidence observed.
+This forces the agents to compute new consistent models which in turns forces them to compute new strategies.
+The agents then repeat the process.
+An EEE is a fixed point of this process.
+The use of models by the agents can be interpreted as a sign of bounded rationality.
+
+The notion of EEE is formally defined in~\cref{sec:empirical_evidence_equilibria}.
+By using a fixed point argument, the existence of \(\epsilon\)-EEEs is proved in~\cref{sec:existence_of_eees}.
+The EEE framework is compared to previous work in~\cref{sec:comparison_of_eees_with_previous_work}.
+A learning rule converging to an EEE in a simple setting is described in~\cref{sec:learning_eees}.
+
+
+\section{Empirical Evidence Equilibria}
+\label{sec:empirical_evidence_equilibria}
+
+
+\subsection{Single Agent Setup}
+
+Consider a discrete time dynamical system governed by
+\begin{equation}
+\label{eq:private_dynamic}
+x\nxt \drawn  f \of{x, a, s},
+\end{equation}
+where \(x\) is a state, \(a\) is an action, and \(s\) is a signal.
+Variables~\(x\), \(a\), and \(s\) take values in finite sets \(\cX\), \(\cA\), and \(\cS\), respectively.
+The agent picks the action \(a\).
+Nature determines the signal \(s\) according to
+\begin{subequations}
+\label{eq:nature_system}
+\begin{align}
+\label{eq:nature_dynamic}
+w\nxt &\drawn n \of{w, x, a}, \\
+\label{eq:nature_signal}
+s &\drawn \nu \of{w},
+\end{align}
+\end{subequations}
+where \(w\) is a state of Nature evolving in the finite state space~\(\cW\).
+The agent observes \(s\) but not \(w\).
+Denote by~\(\rbN\) the dynamical system described by~\cref{eq:private_dynamic,eq:nature_system}.
+
+Define the agent's observation by \(o = \tuple{x, a, s}\) and the actual realization of the system by \(r = \tuple{w, x, a, s}\).
+At time~\(t\), the agent's private history is \(p\T = \tuple{\sseqcom{o}{\tm}{0}{1}{t}}\) and the true history is \(h\T = \tuple{\sseqcom{r}{\tm}{0}{1}{t}}\).
+Denote by \(\cP\) the set of finite private histories.
+A strategy \(\sigma : \cP \to \distribover{\cA}\) is a mapping from private histories to a distribution over the actions.
+
+At each time step, the agent receives a payoff according to the utility function \(u: \cX \times \cA \times \cS \to \bR\).
+For a given infinite private history the agent receives the sum of discounted payoffs \(\sum\idxfromto{t}{0}{\infty} \delta^t u \of{x\T, a\T, s\T}\), where \(\delta \in \interval[oo]{0}{1}\) is a discount factor.
+The agent wants to find a strategy maximizing its expected sum of discounted payoffs \(U\params{\rbN, \sigma}\of{x\tm{0}} = \expectof[\rbN, \sigma]{\sum\idxfromto{t}{0}{\infty} \delta^t u \of{x\T, a\T, s\T}}\).
+
+When the agent knows~\cref{eq:private_dynamic,eq:nature_system}, it is facing a POMDP.
+A natural solution concept for this type of problems is an optimal policy for the POMDP.
+The agent computes an optimal policy making use of beliefs which are probability distributions over the true history.
+Beliefs are obtained from the private history, the signaling structure~\cref{eq:nature_system}, and the application of Bayes' rule.
+Beliefs computation is intractable because every observation increases the size of the belief space.
+
+When the agent knows~\cref{eq:private_dynamic} but does not know~\cref{eq:nature_system} it can still implement an optimal policy for the POMDP.
+However it cannot compute such an optimal policy anymore.
+In such a setting, a less constraining solution concept is required.
+Empirical evidence optimality is one such solution concept that relies on the notion of statistical consistency.
+
+The following section presents the simplest notion of statistical consistency, depth-\(k\) consistency.
+
+\subsection{Depth-\(k\) Consistency}
+\label{sec:depth-k_consistency}
+
+Consider \(c\), an \(\cS\)-valued ergodic process.
+For \(k \in \bN\), its depth-\(k\) characteristic \(\chi\K\) is the long-run distribution of the strings of length \(k + 1\).
+For \(d\) in~\(\cS^{k + 1}\)
+\begin{equation}
+\label{eq:depth-k_characteristic}
+\chi\K\elmt{d} = \limfty{t} \probaof{\tuple{\seqqcom{c}{\tm}{t - k}{t - 1}{t}} = d}.
+\end{equation}
+Two processes with the same depth-\(k\) characteristic are called depth-\(k\) consistent.
+
+The signal observed by the agent is one such \(\cS\)-valued process.
+Consider another \(\cS\)-valued process described by
+\begin{subequations}
+\label{eq:exogenous_mockup_system}
+\begin{align}
+\label{eq:exogenous_mockup_model}
+z\nxt &= m\K \of{z, s}, \\
+\label{eq:exogenous_mockup_predictor}
+s &\drawn \mu \of{z},
+\end{align}
+\end{subequations}
+where \(z\) is a state in \(\cS\pow{k}\) and \(m\K\) is the length-\(k\)--memory function defined by
+\[
+m\K \of{\tuple{\seqqcom{s}{\tm}{t - k}{t - 2}{t - 1}}, s\T} = \tuple{\seqqcom{s}{\tm}{t - k + 1}{t - 1}{t}}.
+\]
+Under some technical assumptions, described in~\cref{sec:empirical_evidence_optimality}, the observed signal and the Markov chain described by~\cref{eq:exogenous_mockup_system} are ergodic processes.
+Furthermore, the Markov chain is depth-\(k\) consistent with the true signal when the following equality holds:
+\[
+\mu \of{z} \elmt{s} = \limfty{t}\probacond[\rbN, \sigma]{s\T = s}{\tuple{\seqqcom{s}{\tm}{t - k}{t - 2}{t - 1}} = z}.
+\]
+
+Denote by \(\rbM\K\) the dynamical system described by~\cref{eq:private_dynamic,eq:exogenous_mockup_system}.
+The system \(\rbM\K\) induces a Markov decision process (MDP) with state~\(\tuple{x, z}\), action~\(a\), strategy~\(\sigmahat \from \cX \times \cZ \to \cA\), and objective function~\(U\params{\rbM\K, \sigmahat}\of{x\tm{0}, z\tm{0}} = \expectof[\rbM\K, \sigmahat]{\sum\idxfromto{t}{0}{\infty} \delta^t u \of{x\T, a\T, s\T}}\).
+A strategy \(\sigmahat\) for the MDP can be implemented in the real system by building \(z\) with~\cref{eq:exogenous_mockup_model}.
+From now on, no distinction will be made between a strategy for the MDP \(\sigmahat\) and its associated strategy built with~\cref{eq:exogenous_mockup_model}.
+Both strategies will be denoted~\(\sigma\).
+
+Consider the following iterative process.
+The agent implements an initial strategy \(\sigma\tm{0}\).
+It formulates a depth-\(k\)--consistent model \(\mu\tm{0}\) of Nature's dynamic.
+Then, it computes an optimal strategy \(\sigma\tm{1}\) for the MDP induced by this model.
+Upon implementation of this new strategy, the model \(\mu\tm{0}\) may lose the requisite statistical consistency.
+Therefore, the agent formulates a revised depth-\(k\)--consistent model \(\mu\tm{1}\) and the process repeats.
+A fixed point of this iterative process is one way to define a solution to this problem.
+A strategy is a solution if it is optimal with respect to the model it induces.
+Note that such a strategy is not a solution to the POMDP.
+
+Using that model to design a strategy is equivalent to the agent making an assumption about the system.
+For example, when the agent uses a depth-\(k\) consistent model, it assumes the signal is generated exogenously, \ie, not impacted by \(x\) or \(a\).
+This assumption might seem restrictive.
+However, note that the repeated modeling and optimization phases create a feedback loop.
+Therefore, a model satisfying the consistency condition is exogenous but captures some characteristics of Nature's dynamic.
+
+The following section extends beyond the notion depth-\(k\) consistency.
+
+\subsection{Empirical Evidence Optimality}
+\label{sec:empirical_evidence_optimality}
+
+The agent assumes that a Markov chain, with state \(z\) from a finite set \(\cZ\), generates the signal \(s\) and that it can construct \(z\) from its observations as follows:
+\begin{subequations}
+\label{eq:mockup_system}
+\begin{align}
+\label{eq:mockup_model}
+z\nxt &\drawn m \of{z, x, a, s}, \\
+\label{eq:mockup_predictor}
+s &\drawn \mu \of{z}.
+\end{align}
+\end{subequations}
+The model \(m\) represents the assumption the agent makes about the system.
+The predictor \(\mu\) is the set of parameters the agent adjusts to be consistent with its observations.
+The pair \(\mmu\) is called a mockup.
+
+In this setup, depth-\(k\) consistency is replaced with the following definition.
+\begin{definition}
+\label{def:consistency}
+Let \(\sigma\) be a strategy and \(\mmu\) be a mockup.
+Predictor \(\mu\) is \(\sigmam\) consistent with \(\rbN\) if
+\[
+\mu \of{z} \elmt{s} = \limfty{t}\probacond[\rbN, \sigma]{s\Tp = s}{z\T = z}.
+\]
+\end{definition}
+
+The notion of optimality used is the following.
+\begin{definition}
+Let \(\sigma\) be a strategy, \(\mmu\) be a mockup, and \(\epsilon\) be a positive number.
+Strategy \(\sigma\) is \(\mum\) optimal if it is optimal for the MDP induced by~\(\rbM\).
+Strategy \(\sigma\) is \(\epsilonmum\)~optimal if it is \(\epsilon\) optimal for the MDP induced by \(\rbM\).
+\end{definition}
+
+Having defined consistency and optimality the definition of an empirical evidence optimum~(EEO) follows.
+\begin{definition}
+Let \(\sigma\) be a strategy, \(\mmu\) be a mockup, and \(\epsilon\) be a positive number.
+The pair \(\sigmamu\) is an \(m\) EEO if the following two conditions hold:
+\begin{enumerate}
+\item Strategy \(\sigma\) is \(\mum\) optimal.
+\item Predictor \(\mu\) is \(\sigmam\) consistent with \(\rbN\).
+\end{enumerate}
+The pair \(\sigmamu\) is an \(\epsilonm\) EEO if the following two conditions hold:
+\begin{enumerate}
+\item Strategy \(\sigma\) is \(\epsilonmum\) optimal.
+\item Predictor \(\mu\) is \(\sigmam\) consistent with \(\rbN\).
+\end{enumerate}
+\end{definition}
+
+A little care must be taken to make \(\mu\) in~\cref{def:consistency} well defined.
+Insuring the following assumption is verified guarantees it.
+\begin{assumption}
+\label{ass:ergodicity}
+Let \(\sigma\) be a strategy, and \(T\strat{\sigma}\) be the Markov chain with state \(X = \tuple{w, x, z}\) induced by \(\rbN\) and \(\sigma\), \(X\nxt \drawn T\strat{\sigma} X\).
+The Markov chain \(T\strat{\sigma}\) is ergodic.
+\end{assumption}
+
+\Cref{ass:ergodicity} insures that \(T\strat{\sigma}\) has a unique stationary distribution \(\pi\strat{\sigma}\) such that \(\limfty{t}\probacond[\rbN, \sigma]{s\Tp = s}{z\T = z} = \probacond[\pi\strat{\sigma}]{s}{z}\).
+Furthermore, \Cref{ass:ergodicity} guarantees that \(\pi\strat{\sigma}\) has full support, meaning that for all \(w\) in \(\cW\), \(x\) in \(\cX\), and \(z\) in \(\cZ\), \(\pi\strat{\sigma}\elmt{w,x,z}\) is positive.
+This guarantees that \(\mu\) in~\cref{def:consistency} is well defined for all \(z\) and \(s\) as follows:
+\begin{align*}
+\mu \of{z} \elmt{s}
+&= \limfty{t}\probacond[\rbN, \sigma]{\set{s\Tp = s}}{\set{z\T = z}} \\
+&= \probacond[\pi\strat{\sigma}]{s}{z} \\
+&= \sum\idxin{w}{\cW} \probacond[\pi\strat{\sigma}]{s}{z, w} \cdot \probacond[\pi\strat{\sigma}]{w}{z} \\
+&= \sum\idxin{w}{\cW} \probacond[\pi\strat{\sigma}]{s}{w} \cdot \frac{\probaof[\pi\strat{\sigma}]{w, z}}{\probaof[\pi\strat{\sigma}]{z}} \\
+&= \sum\idxin{w}{\cW} \nu\of{w}\elmt{s} \cdot \frac{\sum\idxin{x}{\cX} \pi\strat{\sigma}\elmt{w,x,z}}{\sum\idxin{w'}{\cW}\sum\idxin{x}{\cX} \pi\strat{\sigma}\elmt{w',x,z}}
+\end{align*}
+Consistency yields a mapping associating to a strategy \(\sigma\) a unique predictor \(\sigmam\) consistent with \(\rbN\).
+Note that \(\mu\) is a continuous function of \(\pi\strat{\sigma}\).
+
+Similarly, a mapping associating to a predictor \(\mu\) a unique \(\epsilonm\)-optimal strategy can be defined.
+Denote by \(\rbM\) the dynamical system described by \cref{eq:private_dynamic,eq:mockup_system}.
+Consider the MDP induced by \(\rbM\).
+Let \(\Uopt : \cX \times \cZ \to \bR\) be the value function for that MDP.
+Define \(Q : \cX \times \cZ \times \cA \to \bR\) by
+\[
+Q \of{x, z, a} = \onem{\delta} u \of{x, a} + \delta \expectcond[\rbM]{\Uopt \of{x\nxt, z\nxt}}{x, z, a},
+\]
+and \(\sigma\) by
+\[
+\sigma \of{x, z} \elmt{a} = \gibbsQ.
+\]
+As \(\tau\) goes to \(0\), \(\sigma\) converges to a \(\mum\)-optimal strategy.
+When \(\tau\) is small enough, \(\sigma\) is \(\epsilonmum\) optimal.
+To guarantee uniqueness, define \(\tau\) to be the largest value such that \(\sigma\) is \(\epsilonmum\) optimal.
+Note that \(\sigma\) defined that way is a continuous function of the value function~\(\Uopt\).
+
+One way to insure that~\cref{ass:ergodicity} is verified is to have a small noise affect all the transitions.
+Formally, this means that for all \(w \in \cW\), \(x \in \cX\), \(a \in \cA\), and \(s \in \cS\), \(f \of{x, a, s}\), \(n \of{w, x, a}\), \(\nu \of{w}\), and \(\sigma \of{x, z}\) have full support.
+From now on, \cref{ass:ergodicity} is always verified.
+
+The following section extends the notion of EEOs to the multiagent case and defines EEEs.
+
+\subsection{Multiagent Setup}
+
+Consider a collection of agents \(\cI\).
+Each agent \(i\) has a state \(x\I\), an action \(a\I\), and a signal \(s\I\).
+Let \(x\) be the tuple \(\tuple{\seqqcom{x}{\ag}{1}{2}{\abs{\cI}}}\).
+Define \(a\) and \(s\) similarly.
+Agent \(i\) is controlling the system described by
+\begin{equation}
+\label{eq:private_dynamic_i}
+x\I\nxt \drawn  f\I \of{x\I, a\I, s\I}.
+\end{equation}
+Agents \(-i\) are controlling systems described as a whole by
+\begin{equation}
+\label{eq:private_dynamic_-i}
+x\mI\nxt \drawn  f\mI \of{x\mI, a\mI, s\mI}.
+\end{equation}
+All these systems are coupled through Nature which determines the signals \(s\) according to
+\begin{subequations}
+\label{eq:nature_system_i}
+\begin{align}
+\label{eq:nature_dynamic_i}
+w\nxt &\drawn g \of{w, x, a}, \\
+\label{eq:nature_signal_i}
+s &\drawn \omega \of{w}.
+\end{align}
+\end{subequations}
+
+Denote by \(\rbN\I\) the system from agent \(i\)'s perspective.
+In the single agent setup, \(\rbN\) was composed of a known part \cref{eq:private_dynamic} and an unknown part \cref{eq:nature_system}.
+Similarly, \(\rbN\I\) has a known part~\cref{eq:private_dynamic_i} and an unknown part~ \cref{eq:private_dynamic_-i,eq:nature_system_i}.
+
+The other definitions from previous sections can readily be extended to the multiagent case.
+Agent \(i\) has a utility function \(u\I\), a discount factor \(\delta\I\), a strategy \(\sigma\I : \cP\I \to \distribover{\cA\I}\), and a mock of Nature and its opponents described by a state \(z\I\), a model \(m\I\), and a predictor \(\mu\I\).
+
+From agent \(i\)'s perspective, everything is identical to the single agent setup.
+The notions of \(\mum\)-optimality, \(\epsilonmum\)-optimality, and \(\sigmam\)-consistency can be replaced by \(\muImI\)-optimality, \(\epsilonImuImI\)-optimality, and \(\sigmamI\)-consistency respectively.
+Therefore, the definition of EEO readily extends to the multiagent setting.
+\begin{definition}
+Let \(\sigma\), \(\mmu\), and \(\epsilon\) such that for all \(i\) in \(\cI\), \(\sigma\I\) is a strategy, \(\mImuI\) is a mockup, and \(\epsilon\I\) is a positive number.
+The pair \(\sigmamu\) is an \(m\) EEE if the following two conditions hold for all \(i\) in \(\cI\):
+\begin{enumerate}
+\item Strategy \(\sigma\I\) is \(\muImI\) optimal.
+\item Predictor \(\mu\I\) is \(\sigmamI\) consistent with \(\rbN\).
+\end{enumerate}
+The pair \(\sigmamu\) is an \(\epsilonm\) EEE if the following two conditions hold for all \(i\) in \(\cI\):
+\begin{enumerate}
+\item Strategy \(\sigma\I\) is a \(\muImI\) optimal.
+\item Predictor \(\mu\) is \(\sigmamI\) consistent with \(\rbN\).
+\end{enumerate}
+\end{definition}
+
+For a given \(m\) and \(\epsilon\) such that for all \(i\) in \(\cI\), \(\epsilon\I\) is a positive number, denote by \(\FO\) the optimization mapping from predictors to strategies and by \(\FM\) the modeling mapping from strategies to  predictors.
+These mappings are defined by direct extension of their single agent counterparts.
+Define \(\FF\), a mapping from the space of predictors to itself, by \(\FF = \FM \compo \FO\).
+
+
+\section{Existence of EEEs}
+\label{sec:existence_of_eees}
+
+
+Fix models \(m\) and \(\epsilon\) such that for all \(i\) in \(\cI\), \(\epsilon\I\) is a positive number.
+
+\begin{theorem}
+\label{res:mme_existence}
+Theres exists an \(\epsilonm\)-EEE.
+\end{theorem}
+
+\begin{proof}
+First, show that \(\FF\) has a fixed point.
+Predictors can be parametrized by a finite number of elements.
+Therefore \(\FF\) is a mapping from a compact set to itself.
+By \cref{res:modeling_continuity,res:optimization_continuity}, \(\FO\) and \(\FM\) are continuous.
+As the composition of two continuous functions, \(\FF\) is continuous.
+By application of Brouwer's fixed point theorem, \(\FF\) has a fixed point.
+
+\Cref{res:fixed_point_EEE} therefore implies that an \(\epsilonm\)-EEE exists.
+\end{proof}
+
+\begin{proposition}
+\label{res:fixed_point_EEE}
+Let \(\mu\opt\) be a fixed point of \(\FF\).
+Define \(\sigma\opt\) by \(\sigma\opt = \FO \of{\mu\opt}\).
+The pair \(\tuple{\mu\opt, \sigma\opt}\) is an \(\epsilonm\)-EEE.
+\end{proposition}
+
+\begin{proof}
+By definition, strategy \(\sigma\opt\) is \(\epsilonImuoptImI\) optimal.
+Note that \(\FM \of{\sigma\opt} = \FM \compo \FO \of{\mu\opt} = \FF \of{\mu\opt} = \mu\opt\).
+This implies that predictor \(\mu\opt\) is \(\sigmaoptmI\) consistent with~\(\rbN\I\).
+Therefore, \(\tuple{\mu\opt, \sigma\opt}\) is an \(\epsilonm\)-EEE.
+\end{proof}
+
+\begin{proposition}
+\label{res:optimization_continuity}
+The optimization mapping \(\FO\) is continuous.
+\end{proposition}
+
+\begin{proof}
+Agent \(i\)'s predictor only affects agent \(i\)'s strategy.
+Therefore, proving that \(\FO\) is continuous, only requires showing that \(\FO\I: \mu\I \mapsto \sigma\I\) is continuous for all \(i \in \cI\).
+Decompose this function as follows:
+\[
+\FO\I: \mu\I \xmapsto{\subfunc{a}} U\I\opt \xmapsto{\subfunc{b}} \sigma\I,
+\]
+and prove that \(\subfunc{a}\) and \(\subfunc{b}\) are continuous.
+
+\cref{res:markov_continuity} shows that the value function of a finite MDP is a continuous function of the parameters of the problem.
+Since \(\mu\I\) is one of the parameters of the MDP whose value function is~\(U\I\opt\), \(\subfunc{a}\) is continuous.
+It was noted in~\cref{sec:empirical_evidence_optimality} that \(\subfunc{b}\) is continuous.
+\end{proof}
+
+\begin{proposition}
+\label{res:modeling_continuity}
+The modeling mapping \(\FM\) is continuous.
+\end{proposition}
+
+\begin{proof}
+Agent \(i\)'s strategy impacts all the agents' predictors.
+Proving the continuity of \(\FM\), requires showing that \(\FM\ag{i, j}: \sigma\I \mapsto \mu\ag{j}\) is continuous for all \(i, j \in \cI\).
+Decompose this function as follows:
+\[\FM\ag{i, j}: \sigma\I \xmapsto{\subfunc{c}} T\strat{\sigma} \xmapsto{\subfunc{d}} \pi\strat{\sigma} \xmapsto{\subfunc{e}} \mu\ag{j},
+\]
+and prove that \(\subfunc{c}\), \(\subfunc{d}\), and \(\subfunc{e}\) are continuous.
+
+Since \(\subfunc{c}\) is linear, it is continuous.
+\cite[Theorem~4.1]{meyer:1980} shows that the stationary distribution of a finite ergodic Markov chain is a continuous function of the elements of its transition matrix, which proves that \(\subfunc{d}\) is continuous.
+It was noted in~\cref{sec:empirical_evidence_optimality} that \(\subfunc{e}\) is continuous.
+\end{proof}
+
+\begin{lemma}
+\label{res:markov_continuity}
+Consider a finite MDP described by a dynamic~\(x\nxt \drawn f \of{x, a}\), a utility function \(u \of{x, a}\), and a discount factor~\(\delta\).
+Denote by \(\theta\) the finite vector of all the entries in \(f\) and \(u\).
+Let \(\Btheta\) be the Bellman operator associated with the problem.
+By definition, the value function of the problem \(\Utheta\) is the fixed point of \(\Btheta\), \(\Utheta = \Btheta \Utheta\).
+
+The function \(\theta \mapsto \Utheta\) is continuous.
+\end{lemma}
+
+\begin{proof}
+Let \(\theta\) and \(\theta'\) be two vectors of parameters.
+The value function \(\Utheta\) is a fixed point of \(\Btheta\) and \(\Btheta\) is a contraction mapping with Lipschitz constant \(\delta\), therefore,
+\begin{align*}
+\norm{\Utheta - \Uthetap} &= \norm{\Btheta \Utheta - \Uthetap} \\
+&\le \norm{\Btheta \Utheta - \Btheta \Uthetap} + \norm{\Btheta\Uthetap - \Uthetap} \\
+&\le \delta \norm{\Utheta - \Uthetap} + \norm{\Btheta\Uthetap - \Uthetap} \\
+&\le \frac{1}{\onem{\delta}} \norm{\Btheta\Uthetap - \Uthetap}.
+\end{align*}
+
+Now prove that \(\theta \mapsto \Btheta \Uthetap\) is continuous.
+By definition,
+\begin{equation*}
+\parentheses{\Btheta \Uthetap} \of{x} = \max\idxin{a}{\cA} v \of{x, a, \theta},
+\end{equation*}
+where \(v \of{x, a, \theta} = \onem{\delta} u \of{x, a} + \delta \tr{f \of{x, a}} \Uthetap\).
+For fixed~\(x\) and~\(a\), \(\theta \mapsto v \of{x, a, \theta}\) is linear and therefore continuous.
+For a fixed~\(x\), \(\theta \mapsto \Btheta \Uthetap \of{x}\) is the maximum of a finite number of continuous functions and as such is continuous.
+The function \(\theta \mapsto \Btheta \Uthetap\) is continuous because each of its finitely many components are continuous.
+
+Continuity of \(\theta \mapsto \Btheta \Uthetap\) implies that \(\norm{\Utheta - \Uthetap}\) goes to zero as \(\theta\) goes to \(\theta'\).
+This last statement concludes the proof.
+\end{proof}
+
+
+\section{Comparison of EEEs With Previous Work}
+\label{sec:comparison_of_eees_with_previous_work}
+
+
+\subsection{Bounded Rationality}
+
+In classical game theory, agents are assumed to be fully rational.
+Bounded rationality, see \cite{rubinstein:1998}, is a branch of game theory that studies what happens when the agents have limited computation power or make mistakes.
+Fully rational agents can perfectly use any knowledge they have about the problem they face.
+For example, in a stochastic game of imperfect information, fully rational agents propagate beliefs accurately.
+Propagating beliefs means realizing a Bayesian inference on a belief space whose size increases with time.
+Engineered agents have limited computation power, limited memory, and bounded precision.
+Therefore, there is no hope to build fully rational agents in a dynamic world with imperfect information.
+The modeling performed in the framework of EEE is a form of bounded rationality to bypass that limitation.
+The bounded rationality of an agent is captured by the model it uses.
+
+\subsection{Repeated Games}
+Repeated games, studied in depth in \cite{mailath_samuelson:2006}, are stochastic games with no explicit state.
+The history of play is an implicit state used by the agents to choose their actions.
+Therefore, repeated games have the same basic structure as stochastic games, but are easier to analyze.
+In the repeated game setting, the notion of Nash equilibrium is not strong enough and is replaced by the notion of subgame perfect equilibrium~(SPE).
+In an SPE, each agent's beliefs about its opponents are correct on and off the path of play.
+The following works have relaxed the requirements of SPEs and beliefs propagation in ways similar to EEEs.
+
+\subsubsection{Subjective and Self-confirming Equilibria}
+Subjective equilibria, introduced in \cite{kalai_lehrer:1993:subjective}, attempt to lower the requirements for SPE.
+They only require that the beliefs be correct on the path of play.
+Self-confirming equilibria, introduced in \cite{fudenberg_levine:1993}, are closely related.
+A self-confirming equilibrium is a subjective equilibrium where an agent is allowed to hold the false belief that its opponents correlate their actions off the path of play.
+Agents playing a subjective or self-confirming equilibrium never see any empirical evidence contradicting their beliefs.
+The EEE framework is similar to these equilibria because agents look for confirmation of their models in empirical evidence only.
+
+\subsubsection{Analogy Based Expectation Equilibrium}
+Analogy based expectation equilibria~(ABEEs), introduced in \cite{jehiel:2005}, keep the size of the belief space constant.
+Agents partition the histories in a finite number of analogy classes.
+They build their strategies from analogy classes to distributions over actions.
+Agents are in ABEE if the action played in a given analogy class is an expected best response over all the histories in the class.
+This definition of ABEE can be interpreted in the EEE framework as a consistency condition with an exogenous depth-\(0\) model.
+
+\subsubsection{Weakly Belief-free Equilibrium}
+The main class of results in repeated games are folk theorems.
+Folk theorems characterize the set \(\cE\) of payoffs achievable by SPEs.
+Folk theorems exist for different information structures.
+
+In public perfect monitoring, the agents observe all the actions.
+\cite{abreu:1988} shows that all the payoffs in \(\cE\) are achievable using only public strategies.
+
+In public imperfect monitoring, all the agents observe the same signal correlated with the actions.
+In that setting, \(\cE\) is not characterized by a set of strategies.
+Instead, \cite{abreu_pearce_stacchetti:1990} gives a characterization of \(\cE\) as being the largest stable set under a given operator.
+
+In private monitoring, each agent observes a different signal correlated with the actions.
+\cite{ely_horner_olszewski:2005} characterizes a strict subset \(\cF\) of \(\cE\) as being the largest stable set under another operator.
+The set \(\cF\) is the set of payoffs achievable under the constraining set of belief-free equilibria.
+\cite{kandori:2011} defines a less constraining class of equilibria named weakly belief-free equilibria.
+Weakly belief-free equilibria are related to depth-\(k\) consistency without the exogeneity condition.
+
+\subsection{Other Modeling Approaches}
+
+\subsubsection{Egocentric Modeling}
+\cite{seah_shamma:2008} analyzes a specific problem where two agents share a one-dimensional signal.
+The signal is stochastic, but the agents model it with a consistent depth-\(0\) model.
+
+\subsubsection{Mean Field Equilibrium}
+In the mean field equilibrium~(MFE) framework, introduced in~\cite{lasry_lions:2007}, a very large number of agents face identical copies of an MDP.
+These MDPs are coupled through a common signal received by the agents.
+This signal is the proportion of agents in each state which is a stochastic process that depends on the strategies of all the agents.
+Agents compute their optimal strategies by considering the signal as being exogenous and stationary.
+Agents are in an MFE if their optimal strategies generate the same signal.
+MFEs are a special case of EEEs.
+MFEs only consider the game where all the agents face the same MDP and their signal is the distribution of states.
+They compute a depth-\(0\) consistent model of the signal.
+In MFEs, the assumption of exogeneity is actually verified due to the very large number of agents.
+
+\subsubsection{Incomplete Theories}
+\cite{eyster_piccione:2011} analyzes a scenario in which traders have depth-\(k\) consistent models of prices on the market.
+The traders use their models to acquire assets.
+The key result is that traders with more complete theories are not necessarily better off.
+The main difference with the EEE framework is the actions of the traders do not influence the market.
+There is no feedback and therefore no need to update the predictors.
+
+\subsection{Unique Characteristics of EEEs}
+
+While comparing EEEs to previous work, two unique characteristics of EEEs become apparent.
+
+\subsubsection{Verifiability}
+From an agent's perspective, there is no difference between the single agent setup and a multiagent setup.
+The agent can verify on its own that its optimality condition, which is the same for EEOs or EEEs, is satisfied.
+Note however that the agent cannot know for sure that it is in EEE.
+It cannot know if its opponents optimality conditions are satisfied or if its predictor is truly consistent.
+However, agents can use this verifiability for learning, in particular to know when to stop making updates.
+
+\subsubsection{Loose Requirement on Monitoring Structure}
+While describing repeated games, the following taxonomy of monitoring structures was given: public perfect, public imperfect and private.
+These monitoring structures differ in the signal received by the agents, but share the assumption that the agents know the structure.
+Agents do not even need to know the monitoring structure to apply the EEE framework.
+
+
+\section{Learning EEEs}
+\label{sec:learning_eees}
+
+
+\subsection{A Learning Rule}
+
+The fixed points of \(\FF\) are \(\epsilonm\)-EEEs.
+A natural approach to try and learn an \(\epsilonm\)-EEE is to use an adaptive rule that converges to fixed points.
+Consider the following adaptive rule:
+\begin{equation}
+\label{eq:update_rule}
+\mu\Tp = \mu\T + \alpha\T \parentheses*{\FF \of{\mu\T} - \mu\T},
+\end{equation}
+where \(\alpha\T\) is a step size.
+The long run behavior of \cref{eq:update_rule} is related to properties of the following differential equation:
+\begin{equation*}
+\label{eq:differential_equation}
+\dot{\mu} = \FF \of{\mu} - \mu.
+\end{equation*}
+In particular, \cite{benaim:1996} shows that the limit set of \cref{eq:update_rule} is a connected set internally chain-recurrent for the flow induced by \(\FF - \text{Id}\), where \(\text{Id}\) is the identity function.
+The fixed points of \(\FF\) are connected sets internally chain-recurrent for the flow induced by \(\FF - \text{Id}\) but they might not be the only ones.
+Therefore, if \cref{eq:update_rule} converges it might yield an \(\epsilonm\)-EEE.
+
+\subsection{Simulation Results}
+This learning rule was successfully used on a simplified market example.
+Two agents can hold a quantity of a single asset between \(0\) and \(4\), \(\cX = \set{0,1,2,3,4}\).
+At each time step, each agent can sell one asset, buy one asset, or hold its position, \(\cA = \set{\text{Sell}, \text{Hold}, \text{Buy}}\).
+The asset can be traded at a low price or at a high prices, \(\cS=\set{\text{Low}, \text{High}}\).
+Nature exogenously determines the market trend as a bull market or a bear market, \(\cW=\cS \times \set{\text{Bear}, \text{Bull}}\).
+The price is impacted by the past price, the market trend, and the orders placed by the two agents.
+A high price in the past, buying orders, and a bull market increase the chance of seeing a high price in the future.
+The agents receive the price at each time step but are not aware of price dynamic.
+In this model, they are not even aware of the existence of the market trend.
+The two agents use a discount factor~\(\delta=0.95\).
+
+Agent~1 starts with the idea that the price will be high with probability 1.
+Agent~2 starts with the idea that the price will be low with probability 1.
+Each agent is trying to learn a depth-\(0\) model of the price.
+Two versions of~\cref{eq:update_rule} were simulated.
+The first one used~\cref{eq:update_rule} directly with a fixed step size of~\(0.1\).
+The stationary distribution \(\pi\strat{\sigma}\) was computed at each time step to obtain the true value of~\(\FF \of{\mu\T}\),
+In the second version, the stationary distribution was only estimated by playing~\(100\) rounds of the game at each time step.
+Because of the variance induced by this sampling process, the step size was taken to be diminishing, \(\alpha\T = \parentheses*{\frac{1}{t}}\pow{\frac{3}{4}}\).
+The estimated predictors obtained in that case are denoted by \(\hat{\mu}\I\T\).
+
+The results of simulations are presented in~\cref{fig:simulation}.
+Since the price is a public signal, after a transient phase due to the step size, the predictions of both agents agree.
+When using the theoretical predictor, the prediction converges to probability of seeing a high price of \(0.431\).
+The two agents use the same strategy that is the optimal response for that prediction of the price.
+When the price is high sell.
+When the price is low, sell when having four units, hold when having three units, and buy otherwise.
+The learning rule has indeed converged to an EEE.
+When using the empirical predictor, estimating instead of using the true probability induces some variations.
+The learning rule does not converge but oscillates around the EEE reached by the theoretical predictor.
+
+\begin{figure}
+\centering
+\subfigure[Theoretical predictor.]{
+  \newcommand{\ylabelsymbol}{\(\mu\T\I\elmt{\mathrm{High}}\)}%
+  \newcommand{\tabledata}{../simulations/simulation_theoretical.dat}%
+  \input{simulation.tikz}
+  \label{fig:simulation_theoretical}
+}
+\subfigure[Empirical predictor.]{
+  \newcommand{\ylabelsymbol}{\(\hat{\mu}\T\I\elmt{\mathrm{High}}\)}%
+  \newcommand{\tabledata}{../simulations/simulation_empirical.dat}%
+  \input{simulation.tikz}
+  \label{fig:simulation_empirical}
+}
+\caption{Simulation results for two agents learning a depth-\(0\) model of the price:
+\subref{fig:simulation_theoretical} using the theoretical predictor computed from the stationary distribution~\(\pi\strat{\sigma}\);
+\subref{fig:simulation_empirical} using an empirical predictor obtained from playing 100 stages of the game at each time step.}
+\label{fig:simulation}
+\end{figure}
+
+
+\section{Conclusion}
+
+The framework of empirical evidence equilibrium for stochastic games was developed.
+In this framework, each agent creates a mockup of its opponents and the world, consistent with empirical observations.
+It computes its strategy by optimizing with respect to this mockup.
+The strategies interact and generate new empirical evidence.
+The agents are in EEE when their mockups are consistent with this new evidence.
+The existence of \(\epsilon\)-EEEs was proved under some technical assumptions.
+EEEs have the following two strengths.
+First, each agent can verify that the conditions for an EEE are met, from its perspective.
+Second, EEEs require few assumptions on the information structure.
+Convergence of a learning rule to an EEE was exposed through simulation.
+
+In future work, the penalty incurred by selecting an EEE instead of a centralized optimum will be computed.
+The design of a fast adaptive learning rule converging to EEEs will also be investigated.
