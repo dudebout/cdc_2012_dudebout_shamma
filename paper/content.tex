@@ -231,8 +231,8 @@ The following section extends the notion of EEOs to the multiagent case and defi
 \subsection{Multiagent Setup}
 
 Consider a collection of agents \(\cI\).
-Each agent \(i\) has a state \(x\I\), an action \(a\I\), and a signal \(s\I\).
-Let \(x\) be the tuple \(\tuple{\seqqcom{x}{\ag}{1}{2}{\abs{\cI}}}\).
+Each agent \(i\) has a state \(x\I\), an action \(a\I\), and a signal~\(s\I\).
+Let \(x\) be the tuple \(\tuple{\sseqcom{x}{\ag}{1}{2}{\abs{\cI}}}\).
 Define \(a\) and \(s\) similarly.
 Agent \(i\) is controlling the system described by
 \begin{equation}
@@ -263,7 +263,7 @@ The other definitions from previous sections can readily be extended to the mult
 Agent \(i\) has a utility function \(u\I\), a discount factor \(\delta\I\), a strategy \(\sigma\I : \cP\I \to \distribover{\cA\I}\), and a mockup of Nature and its opponents described by a state \(z\I\), a model \(m\I\), and a predictor \(\mu\I\).
 
 From agent \(i\)'s perspective, everything is identical to the single-agent setup.
-The notions of \(\mum\) optimality, \(\epsilonmum\) optimality, and \(\sigmam\) consistency can be replaced by \(\muImI\) optimality, \(\epsilonImuImI\) optimality, and \(\sigmamI\) consistency respectively.
+The notions of \(\mum\) optimality, \(\epsilonmum\) optimality, and \(\sigmam\) consistency can be replaced by~\(\muImI\) optimality, \(\epsilonImuImI\) optimality, and \(\sigmamI\) consistency respectively.
 Therefore, the definition of EEO readily extends to the multiagent setting.
 \begin{definition}
 Let \(\sigma\), \(\mmu\), and \(\epsilon\) such that for all \(i\) in \(\cI\), \(\sigma\I\) is a strategy, \(\mImuI\) is a mockup, and \(\epsilon\I\) is a positive number.
