@@ -1,5 +1,3 @@
-auto/
-paper/auto/
 paper/*.pdf
 paper/*.log
 paper/*.aux*
