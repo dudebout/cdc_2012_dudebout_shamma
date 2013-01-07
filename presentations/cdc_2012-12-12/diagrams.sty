@@ -1,0 +1,78 @@
+\ProvidesPackage{diagrams}
+
+\RequirePackage{etoolbox}
+\RequirePackage{mathtools}
+\RequirePackage{beamerbaseoverlay}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.7}
+\RequirePackage{tikz}
+\usetikzlibrary{shapes,automata,arrows,fit,backgrounds,calc,intersections, decorations.pathmorphing}
+
+% Inspired by: http://tex.stackexchange.com/questions/13793/beamer-alt-command-like-visible-instead-of-like-only
+\newsavebox{\fst@}
+\newsavebox{\snd@}
+\newsavebox{\halfbigbox@}
+
+\newcommand<>\altboxes[3][c]{%
+  \alt#4{\phantomsndbox[#1]{#2}{#3}}{\phantomfstbox[#1]{#2}{#3}}%
+}
+
+\newcommand\phantomsndbox[3][c]{%
+  \savebox\fst@{#2}%
+  \savebox\snd@{#3}%
+  \savebox\halfbigbox@\null%
+  \ht\halfbigbox@\ifnum\ht\fst@>\ht\snd@\ht\fst@\else\ht\snd@\fi
+  \dp\halfbigbox@\ifnum\dp\fst@>\dp\snd@\dp\fst@\else\dp\snd@\fi
+  \wd\halfbigbox@\ifnum\wd\fst@>\wd\snd@\dimexpr\wd\fst@/2\relax\else\dimexpr\wd\snd@/2\relax\fi
+
+  \ifstrequal{#1}{l}{%
+    \rlap{\usebox\fst@}%
+    \copy\halfbigbox@
+    \box\halfbigbox@
+  }{%
+    \ifstrequal{#1}{c}{%
+      \copy\halfbigbox@
+      \clap{\usebox\fst@}%
+      \box\halfbigbox@
+    }{%
+      \ifstrequal{#1}{r}{%
+        \copy\halfbigbox@
+        \box\halfbigbox@
+        \llap{\usebox\fst@}%
+      }{%
+      }%
+    }%
+  }%
+}
+
+\newcommand\phantomfstbox[3][c]{%
+  \phantomsndbox[#1]{#3}{#2}
+}
+
+\newcommand<>{\altvphantom}[2]{\alt#3{#1}{#2}\vphantom{#1}\vphantom{#2}}
+
+\tikzstyle{diagram}=[draw=normal diagram.fg, fill=normal diagram.bg, text=normal diagram.fg, line width=0.25mm, font=\normalsize]
+\tikzstyle{arrow}=[->, >=latex, normal diagram.fg, line width=0.25mm, font=\normalsize]
+\tikzstyle{box}=[diagram, shape=rectangle, rounded corners]
+
+\tikzstyle{markovchain}=[diagram, ->, auto]
+\tikzstyle{mcproba}=[arrow, font=\scriptsize]
+\tikzstyle{state}+=[fill]
+\tikzstyle{equilateral triangle}=[shape=isosceles triangle, isosceles triangle apex angle=60]
+\tikzstyle{signal}=[diagram, equilateral triangle]
+\tikzstyle{sigedg}=[arrow, mcproba, dashed]
+
+\tikzset{onslide/.code args={<#1>#2}{%
+  \only<#1>{\pgfkeysalso{#2}} % \pgfkeysalso doesn't change the path
+}}
+
+\tikzset{
+  invisible/.style={opacity=0},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}
+  },
+  visible on/.style={alt=#1{}{invisible}},
+  shaded/.style={opacity=0.4},
+  shaded on/.style={alt=#1{shaded}{}},
+}

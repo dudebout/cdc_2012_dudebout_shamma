@@ -1,0 +1,83 @@
+\ProvidesPackage{symb}
+
+\RequirePackage{ddbsymb}
+
+\renewcommand{\range}{\rangeus}
+
+\newcommand{\shat}{\hat{s}}
+\newcommand{\hhat}{\hat{h}}
+
+\newcommand{\agentdynamic}{\(x\nxt \drawn f \of {x, a, s}\)}
+
+\newcommand{\agentsystemaddingmodel}{
+  \(
+  \begin{aligned}
+    x\nxt &\drawn f \of {x, a, s} \\
+    a &\drawn \sigma \of {\alt<1-4>{h}{\vphantom{h}\textcolor<5>{alerted diagram.fg}{x, z}}}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\agentisystem}[1][i]{
+  \(
+  \begin{aligned}
+    x\ag{#1}\nxt &\drawn f\ag{#1} \of {x\ag{#1}, a\ag{#1}, s\ag{#1}} \\
+    a\ag{#1} &\drawn \sigma\ag{#1} \of {x\ag{#1}, z\ag{#1}}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\naturesystem}{
+  \(
+  \begin{aligned}
+    w\nxt &\drawn n \of{w, x, a}\\
+    s &\drawn \nu \of{w}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\naturesystemonetwo}{
+  \(
+  \begin{aligned}
+    w\nxt &\drawn n \of{w, x\one, a\one, x\two, a\two}\\
+    \tuple{s\one, s\two} &\drawn \nu \of{w}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\depthkmodelsystem}{
+  \(
+  \begin{aligned}
+    z\nxt &\drawn m_{k} \of{z}\\
+    \shat &\drawn \mu \of{z}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\modelsystem}{
+  \(
+  \begin{aligned}
+    z\nxt &\drawn m \of{z}\\
+    \shat\nxt &\drawn \mu \of{z}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\depthkmodelisystem}[1][i]{
+  \(
+  \begin{aligned}
+    z\ag{#1}\nxt &\drawn m_{#1,k\ag{#1}} \of{z\ag{#1}}\\
+    \shat\ag{#1} &\drawn \mu\ag{#1} \of{z\ag{#1}}
+  \end{aligned}
+  \)
+}
+
+\newcommand{\multiagentstateactionsignal}{
+  \(
+  \begin{aligned}
+    x &= \tuple{\sseqcom{x}{\ag}{1}{2}{N}} \\
+    a &= \tuple{\sseqcom{a}{\ag}{1}{2}{N}} \\
+    s &= \tuple{\sseqcom{s}{\ag}{1}{2}{N}}
+  \end{aligned}
+  \)
+}

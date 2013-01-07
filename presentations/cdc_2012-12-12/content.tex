@@ -1,0 +1,277 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Empirical-evidence Equilibria (EEEs)}
+  \begin{center}
+  \begin{tikzpicture}[node distance=4cm]
+    \node                [box] (ag1) {Agent 1};
+    \node [right of=ag1] [box] (nat) {Nature};
+    \node [right of=nat] [box] (ag2) {Agent 2};
+
+    \coordinate (action1) at ($(ag1.east)!.5!(ag1.north east)$) {};
+    \coordinate (signal1) at ($(ag1.east)!.5!(ag1.south east)$) {};
+    \draw<1-3> [arrow] (action1)           -- node [above] {} (action1-|nat.west);
+    \draw      [arrow] (signal1-|nat.west) -- node [below] {} (signal1);
+
+    \coordinate (action2) at ($(ag2.west)!.5!(ag2.north west)$) {};
+    \coordinate (signal2) at ($(ag2.west)!.5!(ag2.south west)$) {};
+    \draw [arrow] (action2)           -- node [above] {} (action2-|nat.east);
+    \draw [arrow] (signal2-|nat.east) -- node [below] {} (signal2);
+
+
+    \node [diagram, rectangle, rounded corners, fit=(nat) (ag2),visible on=<4>,inner sep=6pt] (group) {};
+    \draw<4> [arrow] (action1)           -- (action1-|group.west);
+    \node<4> at (group.center) {Nature 1};
+  \end{tikzpicture}
+  \end{center}
+
+  At Nash equilibrium in a stochastic game, each agent is playing an optimal strategy for a POMDP
+
+  \bigskip
+
+  \onslide<2->
+  EEE approach:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+    \item Pick arbitrary strategies
+    \item Formulate simple but \structure{consistent} models
+    \item Design strategies \structure{optimal} w.r.t. models, then, back to \structure{1.}
+  \end{enumerate}
+
+  The \structure{fixed points} are EEEs
+
+  \onslide<3->
+  \bigskip
+
+  \begin{block}{Example}
+  Asset management on the stock market
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Single-agent Setup}
+
+\begin{tikzpicture}
+  \node                                  [box] (ag)  {\altboxes<1>{Agent}{\agentsystemaddingmodel}};
+  \node [right of=ag, node distance=7cm] [box] (nat) {\altboxes<1-2>{Nature}{\naturesystem}};
+  \draw<2-> [arrow] (nat) -- node [above] {\(s\)} (ag);
+
+  \node [visible on=<4->, below of=ag, node distance=3cm] [box] (model) {\altboxes<4>{Model}{\modelsystem}};
+  \path [visible on=<4->, arrow] (model) edge node [left] {\(\shat\)} (ag);
+
+  \draw let \p1 = (nat.center), \p2 = (model.center) in
+        node [visible on=<2->] at (\x1 - 12pt, \y2) {\(\displaystyle\max\idx{\sigma}\expectof[\sigma]{\sum\idxfromto{t}{0}{\infty} \delta\pow{t} u\of{x\Tt, a\Tt, s\Tt}}\)};
+
+
+\end{tikzpicture}
+
+\bigskip
+\onslide<6>
+
+\begin{itemize}
+  \item \(\mu\) \structure{consistent} with \(\sigma\)
+  \item \(\sigma\) \structure{optimal} w.r.t. \(\mu\)
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Depth-\(k\) Consistency}
+  Binary stochastic process \(s\)
+  0100010001001010010110111010000111010101...
+
+  \bigskip
+
+  \begin{itemize}
+    \item \(0\) characteristic: \(\probaof{s = 0}, \probaof{s = 1}\)
+    \item \(1\) characteristic: \(\begin{aligned}
+        &\probaof{s s\nxt = 00}, \probaof{s s\nxt = 10},\\
+        &\probaof{s s\nxt = 01}, \probaof{s s\nxt = 11}
+      \end{aligned}\)
+    \item ...
+    \item \(k\) characteristic: probability of strings of length \(k + 1\)
+    \end{itemize}
+
+  \bigskip
+
+  \begin{block}{Definition}
+  Two processes \(s\) and \(\shat\) are depth-\(k\) consistent if they have the same \(k\) characteristic
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Complete Picture}
+\begin{tikzpicture}
+  \node                                  [box] (ag)  {\agentisystem[]};
+
+  \node [right of=ag, node distance=7cm] [box] (nat) {\naturesystem};
+  \draw [arrow] (nat) -- node [above] {\(s\)} (ag);
+
+  \node [below of=ag, node distance=3cm] [box] (model) {\depthkmodelsystem};
+  \path [arrow] (model) edge node [left] {\(\shat\)} (ag);
+
+  \draw let \p1 = (nat.center), \p2 = (model.center) in
+        node at (\x1, \y2) {\minibox[c]{Fix a depth \(k \in \bN\)\\ \\
+\(z\) contains the last \(k\) \\ observed signals}};
+\end{tikzpicture}
+\begin{multline*}
+  \mu\of{z = \tuple{\sseqcom{s}{_}{1}{2}{k}}}[s_{k+1}] = \\
+  \probacond[\sigma]{s\Tp = s_{k+1}}{s\Tt=s_{k}, \dots, s \tm{t -k + 1} = s_{1}}
+\end{multline*}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Empirical-evidence Optimality}
+  \begin{definition}
+  \(\tuple{\sigma, \mu}\) is an empirical-evidence optimum (EEO) for \(k\) iff
+  \begin{itemize}
+  \item \(\sigma\) is \structure{optimal} w.r.t. \(\mu\)
+  \item \(\mu\) is depth-\(k\) \structure{consistent} with \(\sigma\)
+  \end{itemize}
+  \end{definition}
+\bigskip
+  \onslide<2>
+  \begin{definition}
+  \(\tuple{\sigma, \mu}\) is an \alert{\(\epsilon\)} empirical-evidence optimum (\alert{\(\epsilon\)} EEO) for \(k\) iff
+  \begin{itemize}
+  \item \(\sigma\) is \alert{\(\epsilon\)} \structure{optimal} w.r.t. \(\mu\)
+  \item \(\mu\) is depth-\(k\) \structure{consistent} with \(\sigma\)
+  \end{itemize}
+  \end{definition}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Existence Result}
+  \begin{block}{Theorem}
+  For all \(k\) and \(\epsilon\), there exists an \(\epsilon\) EEO for \(k\)
+  \end{block}
+
+  \bigskip
+  \onslide<2>
+  \begin{block}{Proof sketch}
+  \begin{itemize}
+    \itemsep0.5cm
+    \item Technical assumption insures ergodicity of \(s\)
+    \item \(T: \sigma \xmapsto{consistency} \mu \xmapsto{\epsilon \, optimality} \sigma\)  is continuous
+    \item \(\sigma \from \cX \times \cZ \to \distribover{\cA}\) is parametrized over a simplex
+    \item Apply Brouwer's fixed point theorem to \(T\)
+  \end{itemize}
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Multiagent Setup}
+
+  \begin{tikzpicture}[node distance=7cm]
+
+    \node                [box] (ag1) {\agentisystem[1]};
+    \node [right of=ag1] [box] (ag2) {\agentisystem[2]};
+
+    \coordinate (midagent) at ($(ag1)!.5!(ag2)$) {};
+
+    \node [above of=midagent, node distance=3cm] [box] (nat) {\naturesystemonetwo};
+
+  \draw [arrow] (nat) -- node [above left] {\(s\one\)} (ag1);
+  \node [below of=ag1, node distance=2.5cm] [box] (model1) {\depthkmodelisystem[1]};
+  \path [arrow] (model1) edge node [left] {\(\shat\one\)} (ag1);
+
+  \draw [arrow] (nat) -- node [above right] {\(s\two\)} (ag2);
+  \node [below of=ag2, node distance=2.5cm] [box] (model2) {\depthkmodelisystem[2]};
+  \path [arrow] (model2) edge node [right] {\(\shat\two\)} (ag2);
+  \end{tikzpicture}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Empirical-evidence Equilibrium}
+  \begin{description}
+  \item[Strategies]\(\sigma=\tuple{\sseqcom{\sigma}{\ag}{1}{2}{N}}\)
+  \item[Models]\(\mu=\tuple{\sseqcom{\mu}{\ag}{1}{2}{N}}\)
+  \item[Depths]\(k=\tuple{\sseqcom{k}{\ag}{1}{2}{N}}\)
+  \end{description}
+  \bigskip
+
+  \begin{definition}
+  \(\tuple{\sigma, \mu}\) is an empirical-evidence equilibrium (EEE) for \(k\) iff
+  \begin{itemize}
+  \item for all \(i\), \(\sigma\Ii\) is \structure{optimal} w.r.t. \(\mu\Ii\)
+  \item for all \(i\), \(\mu\Ii\) is depth-\(k\Ii\) \structure{consistent} with \(\alert{\sigma}\)
+  \end{itemize}
+  \end{definition}
+
+  \bigskip
+  \begin{block}{Theorem}
+  For all \(k\) and \(\epsilon\), there exists an \(\epsilon\) EEE for \(k\)
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Learning Setup}
+  \begin{description}
+    \item[State] holdings \(x\Ii \in \range{0}{M}\)
+    \item[Action] sell one, hold, or buy one \(a\Ii \in \set{-1, 0, 1}\)
+    \item[Signal] price \(p \in \set{\textnormal{Low}, \textnormal{High}}\)
+    \item[Dynamic] \(x\Ii\nxt = x\Ii + a\Ii\)
+    \item[Stage cost] \(p \cdot a\Ii\)
+    \item[Nature] market trend \(b \in \set{\textnormal{Bull}, \textnormal{Bear}}\)
+
+      \(w = \tuple{b, p}\)
+  \end{description}
+
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+    \item Pick arbitrary depth-\(0\) models \(\mu\)
+    \item Design strategies \(\sigma\) optimal w.r.t. models \(\mu\)
+    \item Formulate consistent models \(\mu_{\textnormal{upd}}\), then, back to \structure{1.}
+  \end{enumerate}
+
+  \[\mu\Ii\Tp = (1 - \alpha) \mu\Ii\Tt + \alpha \grpparen{\mu_{i,\textnormal{upd}}\Tt - \mu\Ii\Tt}\]
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Learning Results: \alt<2>{Online}{Offline}}
+\begin{tikzpicture}
+  \alt<2>{\pgfplotstableread{simulation_empirical.dat}{\simulationdata}}{\pgfplotstableread{simulation_theoretical.dat}{\simulationdata}}
+  \begin{axis}[
+    diagram,
+    xlabel=Time \(t\),
+    ylabel=Prediction \(\mu\Tt\Ii\elmt{\mathrm{High}}\),
+    ymin=0,
+    ymax=1,
+    xmin=0,
+    xmax=100,
+    legend entries={\(i = 1\), \(i = 2\)},
+    legend style={fill=none, draw=none},
+    legend pos = outer north east,
+    cycle list name=beamerplotcyclelist,
+    font=\scriptsize
+    ],
+    \addplot table [x={time}, y={phigh1}] {\simulationdata};
+    \addplot table [x={time}, y={phigh2}] {\simulationdata};
+  \end{axis}
+\end{tikzpicture}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Concluding Remarks}
+  \begin{block}{Comparison with mean-field equilibria}
+    \begin{itemize}
+      \item Identical agents with a specific signal
+      \item Depth-\(0\) model
+      \item Large number of agents to recover Nash equilibrium
+    \end{itemize}
+  \end{block}
+  \onslide<2>
+  \begin{block}{Future directions}
+    \begin{itemize}
+      \item Endogenous model (\(z\nxt \drawn m \of{z, x, a}\))
+      \item Quality of EEEs
+      \item Learning EEEs
+    \end{itemize}
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

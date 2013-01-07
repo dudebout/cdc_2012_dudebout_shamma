@@ -1,0 +1,32 @@
+\documentclass[aspectratio=43,12pt]{beamer}
+
+\usefonttheme{PTxits}
+\useinnertheme{ddb}
+\useoutertheme{ddb}
+\mode<beamer>{
+  \usecolortheme{darklinen}
+  \setbeamertemplate{background}[ddbgraphics][./texmf/tex/latex/latex_ddbbeamer/darklinen.png]
+}
+\mode<handout>{
+  \usecolortheme{handout}
+}
+
+\usepackage{symb}
+\usepackage[beamer]{ddbgame}
+\usepackage{diagrams}
+
+\usepackage{minibox}
+\usepackage{xfrac}
+
+\title{Empirical-evidence Equilibria\\ in Stochastic Games}
+\author{Nicolas Dudebout}
+\institute{Georgia Institute of Technology}
+\date{}
+
+\RenewDocumentCommand\xmapsto{m}{%
+  \mathrel{\luatexUoverdelimiter 0 "21A6 {\mkern5mu #1\mkern5mu}}%
+}
+
+\begin{document}
+\input{content}
+\end{document}
