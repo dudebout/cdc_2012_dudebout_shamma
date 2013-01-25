@@ -11,11 +11,7 @@ One way to do so is as follows:
     $ cd game-theoretic-learning
     $ cabal install --only-dependencies
 
-To generate the paper, the TEXMFHOME environment variable needs to contain `./texmf`.
-If the variable already contains a path, it can be updated as follows:
+The Makefile generating the paper modifies the TEXMFHOME environment variable to contain `./texmf`.
+To combine your TEXMFHOME with the Makefile one you can use the following command:
 
-    $ TEXMFHOME='{<current_texmfhome_value$,./texmf}'
-
-Else the variable can be created as follows:
-
-    $ export TEXMFHOME=./texmf
+    $ export TEXMFHOMEREQUIRED=$TEXMFHOME

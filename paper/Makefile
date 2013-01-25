@@ -1,3 +1,4 @@
+TEXMFHOME := {texmf,${TEXMFHOMEREQUIRED}}
 pdfs = paper.pdf
 latex-makefile = ./latex-makefile
 dependencies = symb.sty abstract.tex nomenclature.tex content.tex simulation.tikz ../simulations/simulation_theoretical.dat ../simulations/simulation_empirical.dat
