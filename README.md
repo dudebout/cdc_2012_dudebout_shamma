@@ -1,7 +1,6 @@
 #Empirical-evidence Equilibria in Stochastic Games
 **Nicolas Dudebout and Jeff S. Shamma**
 
-
 ##Abstract
 The framework of empirical-evidence equilibrium (EEE) for stochastic games is developed in this paper.
 In a stochastic game, agents collectively influence the dynamic of the environment.
@@ -26,6 +25,7 @@ Finally, the learning of EEEs by simple adaptive processes is illustrated throug
       title        = "Empirical Evidence Equilibria in Stochastic Games",
       booktitle    = "51st IEEE Conference on Decision and Control",
       year         = 2012,
+      pages        = "5780-5785",
       month        = dec
     }
 
