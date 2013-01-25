@@ -8,6 +8,7 @@
 \usepackage{subfigure}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\usepackage{fancyhdr}
 
 \usepackage{symb}
 
@@ -30,6 +31,13 @@
 \begin{document}
 
 \maketitle
+
+\thispagestyle{fancy}
+\newcommand{\headerstyle}{\sffamily \bfseries \small}
+\fancyhead[L]{\headerstyle IEEE CDC, 2012}
+\fancyhead[C]{\headerstyle Last updated: January 25, 2013}
+\fancyhead[R]{\headerstyle \href{http://github.com/dudebout/cdc_2012_dudebout_shamma}{Link to \LaTeX{} and code}}
+\renewcommand{\headrulewidth}{0pt}
 
 \begin{abstract}
 \input{abstract}
