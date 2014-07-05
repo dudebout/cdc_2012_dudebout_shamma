@@ -1,5 +1,6 @@
 After cloning the repository, the submodules need to be populated.
 This is done with the following command:
+
     $ git submodule update --init
 
 To generate the simulation data, the dependencies for `game-theoretic-learning` have to be installed.
